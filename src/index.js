@@ -1,2 +1,3 @@
-require('dotenv').config()
-console.log(process.env)
+require('dotenv').config();
+require('./handlers/command_register')();
+require('./handlers/command_router')();
