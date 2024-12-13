@@ -7,12 +7,18 @@ function start() {
     console.log(`Logged in as ${readyClient.user.tag}!`);
   });
 
+  const commands = require('../functions/commands').get();
+
   client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === 'ping') {
-      await interaction.reply('Pong!');
+    for (const i in commands) {
+      const command = commands[i];
+      if (interaction.commandName === command.name) {
+        command.execute(interaction);
+      }
     }
+
   });
 
   client.login(process.env.TOKEN);
