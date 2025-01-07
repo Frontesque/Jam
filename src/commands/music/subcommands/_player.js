@@ -22,7 +22,7 @@ function join_voice(interaction) {
 }
 
 async function create_player(interaction, source) {
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 500));
     //---   Create Connection & Player   ---//
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
     const player = createAudioPlayer({
