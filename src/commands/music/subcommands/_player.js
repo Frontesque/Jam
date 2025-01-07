@@ -1,6 +1,5 @@
 const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, NoSubscriberBehavior, createAudioResource, StreamType } = require('@discordjs/voice');
 const fs = require("fs");
-const path = require("path");
 
 function join_voice(interaction) {
     const channel = interaction.member.voice.channel;
