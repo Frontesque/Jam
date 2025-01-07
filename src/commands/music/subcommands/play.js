@@ -16,7 +16,8 @@ module.exports = {
         await interaction.editReply(query);
 
         //---   Play   ---//
-        jam.join_voice(interaction);
+        jam.join_voice_if_required(interaction);
+        await new Promise(r => setTimeout(r, 500));
         await jam.create_player(interaction, file);
 
     }

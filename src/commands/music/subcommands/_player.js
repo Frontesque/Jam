@@ -21,8 +21,14 @@ function join_voice(interaction) {
     return true;
 }
 
-async function create_player(interaction, source) {
-    await new Promise(r => setTimeout(r, 500));
+function join_voice_if_required(interaction) {
+    if (getVoiceConnection(interaction.member.voice.channel.guild.id)) {
+        return true // Connection already exists for this server
+    };
+    return join_voice(interaction); // Create new connection for this server
+}
+
+function create_player(interaction, source) {
     //---   Create Connection & Player   ---//
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
     const player = createAudioPlayer({
@@ -46,5 +52,6 @@ async function create_player(interaction, source) {
 
 module.exports = {
     join_voice,
+    join_voice_if_required,
     create_player,
 }
