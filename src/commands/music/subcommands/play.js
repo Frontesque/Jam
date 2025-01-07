@@ -8,7 +8,8 @@ module.exports = {
         const query = interaction.options.getString('song');
         if (!url_validate(query)) return await interaction.reply({ content: 'Please provide a valid "youtube.com" url', flags: MessageFlags.Ephemeral });
 
-        await url_download(query);
-        await interaction.reply(query);
+        await interaction.deferReply();
+        const file = await url_download(query);
+        await interaction.editReply(query);
     }
 }

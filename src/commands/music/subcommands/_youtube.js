@@ -1,25 +1,19 @@
-const fs = require('fs');
 const YTDlpWrap = require('yt-dlp-wrap').default;
+const fs = require("fs");
+const utils = require('../../../handlers/utils');
 
 async function initialize() {
     await YTDlpWrap.downloadFromGithub();
-    console.log("_youtube: Latest youtube-dl version downloaded");
+    console.log("[YTDLP]     ", "Latest youtube-dl version downloaded");
+    if(!fs.existsSync("cache")) fs.mkdirSync("cache");
 }
 
 async function url_download(url) {
+    const output = "cache/"+utils.ran(20)+".webm";
     const ytDlpWrap = new YTDlpWrap('./yt-dlp');
-    
-ytDlpWrap.exec([ url, '-f', 'best', '-o', 'output.mp4' ])
-    .on('progress', progress => {
-        if (progress.percent === 100) {
-            return;
-        }
-    })
-    .on('ytDlpEvent', (eventType, eventData) => console.log(eventType, eventData) )
-    .on('error', (error) => console.error(error))
-    .on('close', () => console.log('all done'));
-
-    return;
+    let ytdlp_stream = ytDlpWrap.execStream([ url, '-f', 'bestaudio' ]);
+    ytdlp_stream.pipe(fs.createWriteStream(output));
+    return output;
 }
 
 function url_validate(url) {
@@ -28,9 +22,10 @@ function url_validate(url) {
 }
 
 module.exports = {
+    initialize,
     url_download,
-    url_validate
+    url_validate,
 }
 
 // initialize();
-url_download('https://www.youtube.com/watch?v=DZyYapMZSec');
+// url_download('https://www.youtube.com/watch?v=DZyYapMZSec');
