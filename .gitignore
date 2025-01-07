@@ -1,2 +1,5 @@
 node_modules/
 .env
+yt-dlp
+*.mp4
+*.mp3
