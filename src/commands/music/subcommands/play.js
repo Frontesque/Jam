@@ -2,6 +2,8 @@ const { MessageFlags } = require('discord.js');
 const { url_validate, url_download_ogg } = require('./_youtube');
 const jam = require("./_player");
 
+const { generateDependencyReport } = require('@discordjs/voice');
+
 module.exports = {
     name: "play",
     execute: async (interaction) => {

@@ -1,5 +1,6 @@
 const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, NoSubscriberBehavior, createAudioResource, StreamType } = require('@discordjs/voice');
 const fs = require("fs");
+const path = require("path");
 
 function join_voice(interaction) {
     const channel = interaction.member.voice.channel;
@@ -7,33 +8,40 @@ function join_voice(interaction) {
         interaction.reply('You need to join a voice channel first!');
         return false;
     };
-    joinVoiceChannel({
+    const jvc = joinVoiceChannel({
         channelId: channel.id,
         guildId: channel.guild.id,
         adapterCreator: channel.guild.voiceAdapterCreator,
     });
+    
+    jvc.on('stateChange', (oldState, newState) => {
+        console.log(`[Connection] "${oldState.status}" -> "${newState.status}"`);
+    });
+
     return true;
 }
 
-function create_player(interaction, source) {;
+async function create_player(interaction, source) {
+    await new Promise(r => setTimeout(r, 2000));
     //---   Create Connection & Player   ---//
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
     const player = createAudioPlayer({
         behaviors: { noSubscriber: NoSubscriberBehavior.Stop, },
     });
 
+    player.on('stateChange', (oldState, newState) => {
+        console.log(`[Player] "${oldState.status}" -> "${newState.status}"`);
+    });
+    player.on('error', err => console.log(err));
+    connection.on('error', err => console.log(err));
+
     //---   Make Audio Resource   ---//
     console.log("[JAM]", "Playing:", source);
-    const resource = createAudioResource(fs.createReadStream(source), {
-        inputType: StreamType.OggOpus,
-    });
+    
+    connection.subscribe(player);
+    const resource = createAudioResource(fs.createReadStream(source), { inputType: StreamType.OggOpus });
     //---   Play In Channel   ---//
     player.play(resource);
-    connection.subscribe(player);
-
-    while (true) {
-        console.log(connection._state.status);
-    }
 }
 
 module.exports = {

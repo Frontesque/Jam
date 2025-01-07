@@ -8,7 +8,7 @@ async function webm_to_ogg(source) {
             .input(source)
             .inputFormat('webm')
             .output(output)
-            .format('ogg')
+            .format('opus')
             .on('end', function() {
                 console.log(`[JAM] Converted: "${source}  ->  ${output}"`);
                 return resolve(output);
