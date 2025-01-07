@@ -1,14 +1,14 @@
 const ffmpeg = require('fluent-ffmpeg');
 
-async function webm_to_mp3(source) {
+async function webm_to_ogg(source) {
     return new Promise(async (resolve, reject) => {
-        let output = source.replace(".webm", ".mp3");
+        let output = source.replace(".webm", ".ogg");
         
         await ffmpeg()
             .input(source)
             .inputFormat('webm')
             .output(output)
-            .format('mp3')
+            .format('ogg')
             .on('end', function() {
                 console.log(`[JAM] Converted: "${source}  ->  ${output}"`);
                 return resolve(output);
@@ -19,5 +19,5 @@ async function webm_to_mp3(source) {
 }
 
 module.exports = {
-    webm_to_mp3
+    webm_to_ogg
 }

@@ -5,7 +5,7 @@ const ffwrap = require("./_ffmpeg");
 
 async function initialize() {
     await YTDlpWrap.downloadFromGithub();
-    console.log("[YTDLP]     ", "Latest youtube-dl version downloaded");
+    console.log("[JAM]", "Latest youtube-dl version downloaded");
     if(!fs.existsSync("cache")) fs.mkdirSync("cache");
 }
 
@@ -23,9 +23,9 @@ async function url_download(url) {
     })
 }
 
-async function url_download_mp3(url) {
+async function url_download_ogg(url) {
     const webm = await url_download(url);
-    const mp3 = await ffwrap.webm_to_mp3(webm);
+    const mp3 = await ffwrap.webm_to_ogg(webm);
     fs.unlinkSync(webm);
     return mp3;
 }
@@ -38,7 +38,7 @@ function url_validate(url) {
 module.exports = {
     initialize,
     url_download,
-    url_download_mp3,
+    url_download_ogg,
     url_validate,
 }
 
