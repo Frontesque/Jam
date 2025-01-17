@@ -1,7 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 const subcommands = [
-    require('./subcommands/play')
+    require('./subcommands/play'),
+    require('./subcommands/stop'),
 ];
 
 module.exports = {
@@ -13,7 +14,10 @@ module.exports = {
             .setDescription('Play a song')
             .addStringOption(option => option.setName('song')
                 .setDescription('URL or search query')
-                .setRequired(true))),
+                .setRequired(true)))
+        .addSubcommand(subcommand => subcommand
+            .setName('stop')
+                    .setDescription('Stop the music and leave the voice channel')),
         
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();

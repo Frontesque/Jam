@@ -3,15 +3,25 @@ const fs = require("fs");
 const utils = require('../../../handlers/utils');
 const ffwrap = require("./_ffmpeg");
 
+//---   STATIC VARIABLE   ---//
+const CACHE_FOLDER = "cache";
+const CACHE_ID_DELIMETER = "_jamcache_"
+
 async function initialize() {
     await YTDlpWrap.downloadFromGithub();
-    console.log("[JAM]", "Latest youtube-dl version downloaded");
-    if(!fs.existsSync("cache")) fs.mkdirSync("cache");
+    console.log("[yt-dlp-wrap]", "Latest youtube-dl version downloaded");
+    if(!fs.existsSync(CACHE_FOLDER)) fs.mkdirSync(CACHE_FOLDER);
 }
 
 async function url_download(url) {
     return new Promise((resolve, reject) => {
-        const output = "cache/"+utils.ran(20)+".webm";
+        const output =
+            CACHE_FOLDER
+            + "/" 
+            + id_from_url(url)
+            + CACHE_ID_DELIMETER
+            + utils.ran(20)
+            + ".webm";
         const ytDlpWrap = new YTDlpWrap('./yt-dlp');
         let ytdlp_stream = ytDlpWrap.execStream([ url, '-f', 'bestaudio' ]);
         const write_stream = fs.createWriteStream(output);
@@ -25,9 +35,9 @@ async function url_download(url) {
 
 async function url_download_ogg(url) {
     const webm = await url_download(url);
-    const mp3 = await ffwrap.webm_to_ogg(webm);
+    const ogg = await ffwrap.webm_to_ogg(webm);
     fs.unlinkSync(webm);
-    return mp3;
+    return ogg;
 }
 
 function url_validate(url) {
@@ -35,11 +45,30 @@ function url_validate(url) {
     return regex.test(url);
 }
 
+function id_from_url(url) {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
+
+function file_in_cache(url) {
+    const id = id_from_url(url);
+    const cache = fs.readdirSync(CACHE_FOLDER);
+    for (const i in cache) {
+        if (cache[i].split(CACHE_ID_DELIMETER)[0] == id) {
+            console.log("[JAM] YouTube ID found in cache:", cache[i]);
+            return CACHE_FOLDER + "/" + cache[i];
+        }
+    }
+}
+
 module.exports = {
     initialize,
     url_download,
     url_download_ogg,
     url_validate,
+    id_from_url,
+    file_in_cache,
 }
 
 // initialize();

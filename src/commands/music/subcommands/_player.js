@@ -7,14 +7,15 @@ function join_voice(interaction) {
         interaction.reply('You need to join a voice channel first!');
         return false;
     };
-    const jvc = joinVoiceChannel({
+    const connection = joinVoiceChannel({
         channelId: channel.id,
         guildId: channel.guild.id,
         adapterCreator: channel.guild.voiceAdapterCreator,
     });
     
-    jvc.on('stateChange', (oldState, newState) => {
+    connection.on('stateChange', (oldState, newState) => {
         console.log(`[Connection] "${oldState.status}" -> "${newState.status}"`);
+        if (newState.status === "disconnected") connection.destroy(); // Destroys the connection when the bot is disconnected
     });
 
     return true;
@@ -28,8 +29,10 @@ function join_voice_if_required(interaction) {
 }
 
 function create_player(interaction, source) {
-    //---   Create Connection & Player   ---//
+    //---   Get Connection   ---//
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
+
+    //---   Create Player   ---//
     const player = createAudioPlayer({
         behaviors: { noSubscriber: NoSubscriberBehavior.Stop, },
     });
