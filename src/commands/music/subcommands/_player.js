@@ -48,7 +48,10 @@ function play_from_file(player, source_file) {
 
 async function play_next_in_queue(interaction, player) {
     const server_queue = get_queue(interaction);
-    if (server_queue.length == 0) return leave(interaction);
+    if (server_queue.length == 0) {
+        interaction.channel.send(`👋 Queue ended, bye!`);
+        return leave(interaction)
+    };
     const next_song = server_queue[0];
     const file = await youtube.download_or_cached(next_song);
     interaction.channel.send(`Playing: ${next_song}`);
