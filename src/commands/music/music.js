@@ -3,6 +3,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const subcommands = [
     require('./subcommands/play'),
     require('./subcommands/stop'),
+    require('./subcommands/queue'),
 ];
 
 module.exports = {
@@ -17,7 +18,10 @@ module.exports = {
                 .setRequired(true)))
         .addSubcommand(subcommand => subcommand
             .setName('stop')
-                    .setDescription('Stop the music and leave the voice channel')),
+                .setDescription('Stop the music and leave the voice channel'))
+        .addSubcommand(subcommand => subcommand
+            .setName('queue')
+                .setDescription('See the songs in your queue')),
         
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();

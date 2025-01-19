@@ -1,5 +1,8 @@
 const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, NoSubscriberBehavior, createAudioResource, StreamType } = require('@discordjs/voice');
+const youtube = require('./_youtube');
 const fs = require("fs");
+
+let queue = {};
 
 function join_voice(interaction) {
     const channel = interaction.member.voice.channel;
@@ -17,6 +20,10 @@ function join_voice(interaction) {
         console.log(`[Connection] "${oldState.status}" -> "${newState.status}"`);
         if (newState.status === "disconnected") connection.destroy(); // Destroys the connection when the bot is disconnected
     });
+    connection.on('error', err => {
+        console.log("[Connection]", err);
+        connection.destroy();
+    });
 
     return true;
 }
@@ -28,8 +35,23 @@ function join_voice_if_required(interaction) {
     return join_voice(interaction); // Create new connection for this server
 }
 
-function create_player(interaction, source) {
+function play_from_file(player, source_file) {
+    console.log("[JAM]", "Playing:", source_file);
+    const resource = createAudioResource(fs.createReadStream(source_file), { inputType: StreamType.OggOpus });
+    player.play(resource);
+}
+
+async function play_next_in_queue(interaction, player) {
+    const next_song = get_queue(interaction)[0];
+    const file = await youtube.download_or_cached(next_song);
+    interaction.channel.send(`Playing: ${next_song}`);
+    play_from_file(player, file);
+}
+
+async function create_player(interaction) {
     //---   Get Connection   ---//
+    join_voice_if_required(interaction);
+    await new Promise(r => setTimeout(r, 500));
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
 
     //---   Create Player   ---//
@@ -39,21 +61,31 @@ function create_player(interaction, source) {
 
     player.on('stateChange', (oldState, newState) => {
         console.log(`[Player] "${oldState.status}" -> "${newState.status}"`);
+        if (newState.status == "idle") {
+            queue[interaction.member.voice.channel.guild.id].shift();
+            play_next_in_queue(interaction, player);
+        }
     });
     player.on('error', err => console.log(err));
-    connection.on('error', err => console.log(err));
-
-    //---   Make Audio Resource   ---//
-    console.log("[JAM]", "Playing:", source);
-    
     connection.subscribe(player);
-    const resource = createAudioResource(fs.createReadStream(source), { inputType: StreamType.OggOpus });
-    //---   Play In Channel   ---//
-    player.play(resource);
+    play_next_in_queue(interaction, player);
+}
+
+function add_to_queue(interaction, url) {
+    const guild_id = interaction.member.voice.channel.guild.id;
+    if (!queue[guild_id]) queue[guild_id] = new Array();
+    queue[guild_id].push(url);
+}
+
+function get_queue(interaction) {
+    const guild_id = interaction.member.voice.channel.guild.id;
+    return queue[guild_id];
 }
 
 module.exports = {
     join_voice,
     join_voice_if_required,
     create_player,
+    add_to_queue,
+    get_queue,
 }
