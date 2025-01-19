@@ -28,6 +28,11 @@ function join_voice(interaction) {
     return true;
 }
 
+function leave(interaction) {
+    const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
+    connection.destroy();
+}
+
 function join_voice_if_required(interaction) {
     if (getVoiceConnection(interaction.member.voice.channel.guild.id)) {
         return true // Connection already exists for this server
@@ -42,7 +47,9 @@ function play_from_file(player, source_file) {
 }
 
 async function play_next_in_queue(interaction, player) {
-    const next_song = get_queue(interaction)[0];
+    const server_queue = get_queue(interaction);
+    if (server_queue.length == 0) return leave(interaction);
+    const next_song = server_queue[0];
     const file = await youtube.download_or_cached(next_song);
     interaction.channel.send(`Playing: ${next_song}`);
     play_from_file(player, file);
