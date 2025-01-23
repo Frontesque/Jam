@@ -4,6 +4,15 @@ const fs = require("fs");
 
 let queue = {};
 
+function leave(interaction) {
+    //---   Clear Queue   ---//
+    queue[interaction.member.voice.channel.guild.id] = new Array();
+
+    //---   Kill Connection   ---//
+    const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
+    connection.destroy();
+}
+
 function join_voice(interaction) {
     const channel = interaction.member.voice.channel;
     if (!channel) {
@@ -18,19 +27,14 @@ function join_voice(interaction) {
     
     connection.on('stateChange', (oldState, newState) => {
         console.log(`[Connection] "${oldState.status}" -> "${newState.status}"`);
-        if (newState.status === "disconnected") connection.destroy(); // Destroys the connection when the bot is disconnected
+        if (newState.status === "disconnected") leave(interaction); // Destroys the connection when the bot is disconnected
     });
     connection.on('error', err => {
         console.log("[Connection]", err);
-        connection.destroy();
+        leave(interaction);
     });
 
     return true;
-}
-
-function leave(interaction) {
-    const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
-    connection.destroy();
 }
 
 function join_voice_if_required(interaction) {
