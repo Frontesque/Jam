@@ -6,7 +6,7 @@ module.exports = {
     name: "play",
     execute: async (interaction) => {
         const query = interaction.options.getString('song');
-        if (!youtube.url_validate(query)) return await interaction.reply({ content: 'Please provide a valid "youtube.com" url', flags: MessageFlags.Ephemeral });
+        if (youtube.id_from_url(query) == null) return await interaction.reply({ content: '⚠️ Please provide a valid YouTube url.', flags: MessageFlags.Ephemeral });
         console.log("[JAM] /play:", query);
 
         //---   Queue or Play   ---//

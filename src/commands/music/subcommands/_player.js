@@ -7,6 +7,7 @@ let queue = {};
 
 function leave(interaction) {
     //---   Clear Queue   ---//
+    state[interaction.member.voice.channel.guild.id] = null;
     queue[interaction.member.voice.channel.guild.id] = new Array();
 
     //---   Kill Connection   ---//
@@ -77,7 +78,7 @@ async function create_player(interaction) {
     player.on('stateChange', (oldState, newState) => {
         console.log(`[Player] "${oldState.status}" -> "${newState.status}"`);
         if (newState.status == "idle") {
-            if (state[interaction.member.voice.channel.guild.id].loop != true) { // Only play *next* song if loop is not enabled
+            if (state[interaction.member.voice.channel.guild.id]?.loop != true) { // Only play *next* song if loop is not enabled
                 queue[interaction.member.voice.channel.guild.id].shift(); // Shift queue
             }
             play_next_in_queue(interaction, player);
@@ -108,6 +109,7 @@ module.exports = {
     add_to_queue,
     get_queue,
     play_next_in_queue,
+    leave,
     queue,
     state,
 }
