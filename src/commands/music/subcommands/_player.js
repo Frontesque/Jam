@@ -12,7 +12,9 @@ function leave(interaction) {
 
     //---   Kill Connection   ---//
     const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
-    connection.destroy();
+    if (connection) {
+        connection.destroy();
+    }
 }
 
 function join_voice(interaction) {
