@@ -51,14 +51,8 @@ async function download_or_cached(url) {
     return file;
 }
 
-function url_validate(url) {
-    const regex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}(&.*)?$/;
-    return regex.test(url);
-}
-
 function id_from_url(url) {
-    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = url.match(regex);
+    let match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
     return match ? match[1] : null;
 }
 
@@ -77,7 +71,6 @@ module.exports = {
     initialize,
     url_download,
     url_download_ogg,
-    url_validate,
     id_from_url,
     file_in_cache,
     download_or_cached,

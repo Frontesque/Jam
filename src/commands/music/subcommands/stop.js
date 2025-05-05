@@ -1,10 +1,9 @@
-const { getVoiceConnection } = require('@discordjs/voice');
+const jam = require("./_player");
 
 module.exports = {
     name: "stop",
     execute: async (interaction) => {
-        const connection = getVoiceConnection(interaction.member.voice.channel.guild.id);
-        connection.destroy();
+        jam.leave(interaction);
         interaction.reply("💨 *poof*")
     }
 }
