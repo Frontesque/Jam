@@ -4,6 +4,8 @@ const subcommands = [
     require('./subcommands/play'),
     require('./subcommands/stop'),
     require('./subcommands/queue'),
+    require('./subcommands/skip'),
+    require('./subcommands/loop'),
 ];
 
 module.exports = {
@@ -21,7 +23,13 @@ module.exports = {
                 .setDescription('Stop the music and leave the voice channel'))
         .addSubcommand(subcommand => subcommand
             .setName('queue')
-                .setDescription('See the songs in your queue')),
+                .setDescription('See the songs in your queue'))
+        .addSubcommand(subcommand => subcommand
+            .setName('skip')
+                .setDescription('Skip the current song'))
+        .addSubcommand(subcommand => subcommand
+            .setName('loop')
+                .setDescription('Loop (repeat) the current song. Run again to disable.')),
         
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
