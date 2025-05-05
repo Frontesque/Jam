@@ -77,7 +77,9 @@ async function create_player(interaction) {
     player.on('stateChange', (oldState, newState) => {
         console.log(`[Player] "${oldState.status}" -> "${newState.status}"`);
         if (newState.status == "idle") {
-            queue[interaction.member.voice.channel.guild.id].shift();
+            if (state[interaction.member.voice.channel.guild.id].loop != true) { // Only play *next* song if loop is not enabled
+                queue[interaction.member.voice.channel.guild.id].shift(); // Shift queue
+            }
             play_next_in_queue(interaction, player);
         }
     });

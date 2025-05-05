@@ -1,4 +1,3 @@
-const { getVoiceConnection } = require('@discordjs/voice');
 const jam = require("./_player");
 
 module.exports = {
