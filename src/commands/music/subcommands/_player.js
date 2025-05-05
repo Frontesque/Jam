@@ -2,6 +2,7 @@ const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, NoSubscriberBeh
 const youtube = require('./_youtube');
 const fs = require("fs");
 
+let state = {};
 let queue = {};
 
 function leave(interaction) {
@@ -82,6 +83,8 @@ async function create_player(interaction) {
     });
     player.on('error', err => console.log(err));
     connection.subscribe(player);
+    state[interaction.member.voice.channel.guild.id] = {}; // Create State Object
+    state[interaction.member.voice.channel.guild.id].player = player;
     play_next_in_queue(interaction, player);
 }
 
@@ -102,4 +105,7 @@ module.exports = {
     create_player,
     add_to_queue,
     get_queue,
+    play_next_in_queue,
+    queue,
+    state,
 }
