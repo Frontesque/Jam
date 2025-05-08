@@ -1,21 +1,22 @@
-const ffmpeg = require('fluent-ffmpeg');
+const { spawn } = require('child_process');
 
 async function webm_to_ogg(source) {
     return new Promise(async (resolve, reject) => {
         let output = source.replace(".webm", ".ogg");
         
-        await ffmpeg()
-            .input(source)
-            .inputFormat('webm')
-            .output(output)
-            .format('opus')
-            .on('end', function() {
-                console.log(`[JAM] Converted: "${source}  ->  ${output}"`);
-                return resolve(output);
-            })
-            .run();
-    })
+        console.log(`[JAM -> FFMPEG] Converting: "${source}  ->  ${output}"`);
+        const cmd = spawn('ffmpeg', [
+            "-i", source,
+            "-f", "opus",
+            output
+        ]);
+        cmd.on('close', (code) => {
+            console.log(`[JAM -> FFMPEG] Converted: "${source}  ->  ${output}"`);
+            return resolve(output);
+        });
 
+
+    })
 }
 
 module.exports = {
