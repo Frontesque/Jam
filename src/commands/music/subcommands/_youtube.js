@@ -15,6 +15,7 @@ async function initialize() {
 
 async function url_download(url) {
     return new Promise((resolve, reject) => {
+        console.log(`[YTDLP] Downloading: "${url}"`);
         const output =
             CACHE_FOLDER
             + "/" 
@@ -27,7 +28,7 @@ async function url_download(url) {
         const write_stream = fs.createWriteStream(output);
         ytdlp_stream.pipe(write_stream);
         write_stream.on('close', _ => {
-            console.log(`[JAM] Downloaded: "${url}"  ->  "${output}"`);
+            console.log(`[YTDLP] Downloaded: "${url}"  ->  "${output}"`);
             return resolve(output);
         })
     })
