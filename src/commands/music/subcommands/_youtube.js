@@ -13,6 +13,10 @@ async function initialize() {
     if(!fs.existsSync(CACHE_FOLDER)) fs.mkdirSync(CACHE_FOLDER);
 }
 
+function normalize_url(url) {
+    return "https://youtube.com/watch?v="+id_from_url(url);
+}
+
 async function url_download(url) {
     return new Promise((resolve, reject) => {
         console.log(`[YTDLP] Downloading: "${url}"`);
@@ -24,7 +28,7 @@ async function url_download(url) {
             + utils.ran(20)
             + ".webm";
         const ytDlpWrap = new YTDlpWrap('./yt-dlp');
-        let ytdlp_stream = ytDlpWrap.execStream([ url, '-f', 'bestaudio' ]);
+        let ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '-x', '-f', 'bestaudio' ]);
         const write_stream = fs.createWriteStream(output);
         ytdlp_stream.pipe(write_stream);
         write_stream.on('close', _ => {
@@ -34,20 +38,23 @@ async function url_download(url) {
     })
 }
 
-async function url_download_ogg(url) {
+async function url_download_ogg(url, interaction) {
+    if (interaction) interaction.editReply("⬇️ Downloading...");
     const webm = await url_download(url);
+    if (interaction) interaction.editReply("🔁 Converting...");
     const ogg = await ffwrap.webm_to_ogg(webm);
     fs.unlinkSync(webm);
+    if (interaction) interaction.editReply("📃 Added to the queue!");
     return ogg;
 }
 
-async function download_or_cached(url) {
+async function download_or_cached(url, interaction) {
     let file;
     const is_file_in_cache = file_in_cache(url);
     if (is_file_in_cache) {
         file = is_file_in_cache;
     } else {
-        file = await url_download_ogg(url);
+        file = await url_download_ogg(url, interaction);
     }
     return file;
 }
@@ -70,6 +77,7 @@ function file_in_cache(url) {
 
 module.exports = {
     initialize,
+    normalize_url,
     url_download,
     url_download_ogg,
     id_from_url,

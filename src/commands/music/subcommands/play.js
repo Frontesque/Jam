@@ -11,7 +11,7 @@ module.exports = {
 
         //---   Queue or Play   ---//
         jam.add_to_queue(interaction, query);
-        interaction.reply("Added to the queue!");
+        interaction.reply("📃 Added to the queue!");
         if (jam.get_queue(interaction).length > 1) return;
 
         //---   Play   ---//
