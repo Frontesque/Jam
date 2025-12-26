@@ -5,6 +5,13 @@ const fs = require("fs");
 let state = {};
 let queue = {};
 
+class Track {
+    constructor(url, interaction) {
+        this.url = url;
+        this.interaction = interaction;
+    }
+}
+
 function leave(interaction) {
     //---   Clear Queue   ---//
     state[interaction.member.voice.channel.guild.id] = null;
@@ -61,8 +68,8 @@ async function play_next_in_queue(interaction, player) {
         return leave(interaction)
     };
     const next_song = server_queue[0];
-    const file = await youtube.download_or_cached(next_song, interaction);
-    interaction.channel.send(`Playing: ${next_song}`);
+    const file = await youtube.download_or_cached(next_song.url, next_song.interaction);
+    next_song.interaction.editReply(`▶️ Playing: ${youtube.normalize_url(next_song.url)}`);
     play_from_file(player, file);
 }
 
@@ -96,7 +103,7 @@ async function create_player(interaction) {
 function add_to_queue(interaction, url) {
     const guild_id = interaction.member.voice.channel.guild.id;
     if (!queue[guild_id]) queue[guild_id] = new Array();
-    queue[guild_id].push(url);
+    queue[guild_id].push(new Track(url, interaction));
 }
 
 function get_queue(interaction) {
