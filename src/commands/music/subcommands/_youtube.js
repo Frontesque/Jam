@@ -44,7 +44,6 @@ async function url_download_ogg(url, interaction) {
     if (interaction) interaction.editReply("🔁 Converting...");
     const ogg = await ffwrap.webm_to_ogg(webm);
     fs.unlinkSync(webm);
-    if (interaction) interaction.editReply("📃 Added to the queue!");
     return ogg;
 }
 
