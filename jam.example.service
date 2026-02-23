@@ -1,0 +1,14 @@
+# /etc/systemd/system/jam.service
+[Unit]
+Description=JAM Bot
+After=network.target
+
+[Service]
+Type=simple
+User=jam
+Group=jam
+WorkingDirectory=/home/jam/jam
+ExecStart=node .
+
+[Install]
+WantedBy=multi-user.target
