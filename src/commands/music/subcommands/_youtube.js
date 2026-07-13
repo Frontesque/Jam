@@ -28,7 +28,7 @@ async function url_download(url) {
             + utils.ran(20)
             + ".webm";
         const ytDlpWrap = new YTDlpWrap('./yt-dlp');
-        let ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '-x', '-f', 'bestaudio' ]);
+        let ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '-x', '--js-runtimes', 'node', '-f', 'bestaudio' ]);
         const write_stream = fs.createWriteStream(output);
         ytdlp_stream.pipe(write_stream);
         write_stream.on('close', _ => {
