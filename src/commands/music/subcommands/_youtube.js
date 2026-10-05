@@ -34,7 +34,7 @@ async function url_download(url) {
         const fail = err => {
             ytdlp_stream.unpipe?.(write_stream);
             write_stream.destroy();
-            fs.rm(output, { force: true }, () => {});
+            write_stream.once('close', () => fs.rmSync(output, { force: true }));
             reject(err instanceof Error ? err : new Error(String(err)));
         };
         ytdlp_stream.on('error', fail);
