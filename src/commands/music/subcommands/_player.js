@@ -1,6 +1,11 @@
 const { joinVoiceChannel, getVoiceConnection, createAudioPlayer, NoSubscriberBehavior, createAudioResource, StreamType } = require('@discordjs/voice');
 const youtube = require('./_youtube');
+const soundcloud = require('./_soundcloud');
 const fs = require("fs");
+
+function source_for(url) {
+    return [youtube, soundcloud].find(s => s.id_from_url(url) != null);
+}
 
 let state = {};
 let queue = {};
@@ -69,8 +74,9 @@ async function play_next_in_queue(interaction, player) {
     };
     const next_song = server_queue[0];
     try {
-        const file = await youtube.download_or_cached(next_song.url, next_song.interaction);
-        next_song.interaction.editReply(`▶️ Playing: ${youtube.normalize_url(next_song.url)}`);
+        const source = source_for(next_song.url);
+        const file = await source.download_or_cached(next_song.url, next_song.interaction);
+        next_song.interaction.editReply(`▶️ Playing: ${source.normalize_url(next_song.url)}`);
         play_from_file(player, file);
     } catch (err) {
         console.error("[JAM] Failed to load song:", err);
@@ -125,6 +131,7 @@ module.exports = {
     add_to_queue,
     get_queue,
     play_next_in_queue,
+    source_for,
     leave,
     queue,
     state,

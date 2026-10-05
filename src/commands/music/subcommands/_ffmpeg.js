@@ -3,7 +3,7 @@ const fs = require('fs');
 
 async function webm_to_ogg(source) {
     return new Promise(async (resolve, reject) => {
-        let output = source.replace(".webm", ".ogg");
+        let output = source.replace(/\.[^./]+$/, ".ogg");
         
         console.log(`[FFMPEG] Converting: "${source}  ->  ${output}"`);
         const cmd = spawn('ffmpeg', [

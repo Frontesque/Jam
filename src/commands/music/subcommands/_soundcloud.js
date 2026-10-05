@@ -4,32 +4,35 @@ const utils = require('../../../handlers/utils');
 const ffwrap = require("./_ffmpeg");
 
 //---   STATIC VARIABLE   ---//
-const CACHE_FOLDER = "cache/youtube";
+const CACHE_FOLDER = "cache/soundcloud";
 const CACHE_ID_DELIMETER = "_jamcache_"
 
-async function initialize() {
-    await YTDlpWrap.downloadFromGithub();
-    console.log("[yt-dlp-wrap]", "Latest youtube-dl version downloaded");
+function initialize() {
     fs.mkdirSync(CACHE_FOLDER, { recursive: true });
 }
 
+// Track ID is "artist__track", derived from the URL path
+function id_from_url(url) {
+    const match = url.match(/^(?:https?:\/\/)?(?:www\.|m\.)?soundcloud\.com\/([a-zA-Z0-9_-]+)\/(?!sets(?:[/?#]|$))([a-zA-Z0-9_-]+)/);
+    return match ? `${match[1]}__${match[2]}`.toLowerCase() : null;
+}
+
 function normalize_url(url) {
-    return "https://youtube.com/watch?v="+id_from_url(url);
+    const id = id_from_url(url);
+    if (!id) return null;
+    const [artist, track] = id.split("__");
+    return `https://soundcloud.com/${artist}/${track}`;
 }
 
 async function url_download(url) {
     return new Promise((resolve, reject) => {
+        const id = id_from_url(url);
+        if (!id) return reject(new Error(`Invalid SoundCloud URL: ${url}`));
         console.log(`[YTDLP] Downloading: "${url}"`);
-        const output =
-            CACHE_FOLDER
-            + "/" 
-            + id_from_url(url)
-            + CACHE_ID_DELIMETER
-            + utils.ran(20)
-            + ".webm";
+        initialize();
+        const output = CACHE_FOLDER + "/" + id + CACHE_ID_DELIMETER + utils.ran(20) + ".tmp";
         const ytDlpWrap = new YTDlpWrap('./yt-dlp');
-        if (!id_from_url(url)) return reject(new Error(`Invalid YouTube URL: ${url}`));
-        let ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '-x', '--js-runtimes', 'node', '-f', 'bestaudio' ]);
+        const ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '--no-playlist', '-f', 'bestaudio' ]);
         const write_stream = fs.createWriteStream(output);
         const fail = err => {
             ytdlp_stream.unpipe?.(write_stream);
@@ -50,40 +53,28 @@ async function url_download(url) {
 
 async function url_download_ogg(url, interaction) {
     if (interaction) interaction.editReply("⬇️ Downloading...");
-    const webm = await url_download(url);
+    const raw = await url_download(url);
     if (interaction) interaction.editReply("🔁 Converting...");
     try {
-        return await ffwrap.webm_to_ogg(webm);
+        return await ffwrap.webm_to_ogg(raw);
     } finally {
-        fs.rmSync(webm, { force: true });
+        fs.rmSync(raw, { force: true });
     }
-}
-
-async function download_or_cached(url, interaction) {
-    let file;
-    const is_file_in_cache = file_in_cache(url);
-    if (is_file_in_cache) {
-        file = is_file_in_cache;
-    } else {
-        file = await url_download_ogg(url, interaction);
-    }
-    return file;
-}
-
-function id_from_url(url) {
-    let match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
 }
 
 function file_in_cache(url) {
     const id = id_from_url(url);
-    const cache = fs.readdirSync(CACHE_FOLDER);
-    for (const i in cache) {
-        if (cache[i].split(CACHE_ID_DELIMETER)[0] == id) {
-            console.log("[JAM] YouTube ID found in cache:", cache[i]);
-            return CACHE_FOLDER + "/" + cache[i];
+    if (!fs.existsSync(CACHE_FOLDER)) return;
+    for (const name of fs.readdirSync(CACHE_FOLDER)) {
+        if (name.split(CACHE_ID_DELIMETER)[0] == id && name.endsWith(".ogg")) {
+            console.log("[JAM] SoundCloud ID found in cache:", name);
+            return CACHE_FOLDER + "/" + name;
         }
     }
+}
+
+async function download_or_cached(url, interaction) {
+    return file_in_cache(url) || await url_download_ogg(url, interaction);
 }
 
 module.exports = {
@@ -95,6 +86,3 @@ module.exports = {
     file_in_cache,
     download_or_cached,
 }
-
-// initialize();
-// url_download('https://www.youtube.com/watch?v=DZyYapMZSec');
