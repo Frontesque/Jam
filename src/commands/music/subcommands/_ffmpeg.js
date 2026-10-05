@@ -10,7 +10,9 @@ async function webm_to_ogg(source) {
             "-f", "opus",
             output
         ]);
+        cmd.on('error', reject);
         cmd.on('close', (code) => {
+            if (code !== 0) return reject(new Error(`ffmpeg exited with code ${code}`));
             console.log(`[FFMPEG] Converted: "${source}  ->  ${output}"`);
             return resolve(output);
         });

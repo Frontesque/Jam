@@ -28,10 +28,20 @@ async function url_download(url) {
             + utils.ran(20)
             + ".webm";
         const ytDlpWrap = new YTDlpWrap('./yt-dlp');
+        if (!id_from_url(url)) return reject(new Error(`Invalid YouTube URL: ${url}`));
         let ytdlp_stream = ytDlpWrap.execStream([ normalize_url(url), '-x', '--js-runtimes', 'node', '-f', 'bestaudio' ]);
         const write_stream = fs.createWriteStream(output);
+        const fail = err => {
+            ytdlp_stream.unpipe?.(write_stream);
+            write_stream.destroy();
+            fs.rm(output, { force: true }, () => {});
+            reject(err instanceof Error ? err : new Error(String(err)));
+        };
+        ytdlp_stream.on('error', fail);
+        write_stream.on('error', fail);
         ytdlp_stream.pipe(write_stream);
         write_stream.on('close', _ => {
+            if (write_stream.destroyed && !write_stream.writableFinished) return;
             console.log(`[YTDLP] Downloaded: "${url}"  ->  "${output}"`);
             return resolve(output);
         })
@@ -42,9 +52,11 @@ async function url_download_ogg(url, interaction) {
     if (interaction) interaction.editReply("⬇️ Downloading...");
     const webm = await url_download(url);
     if (interaction) interaction.editReply("🔁 Converting...");
-    const ogg = await ffwrap.webm_to_ogg(webm);
-    fs.unlinkSync(webm);
-    return ogg;
+    try {
+        return await ffwrap.webm_to_ogg(webm);
+    } finally {
+        fs.rmSync(webm, { force: true });
+    }
 }
 
 async function download_or_cached(url, interaction) {

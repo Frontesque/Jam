@@ -68,9 +68,16 @@ async function play_next_in_queue(interaction, player) {
         return leave(interaction)
     };
     const next_song = server_queue[0];
-    const file = await youtube.download_or_cached(next_song.url, next_song.interaction);
-    next_song.interaction.editReply(`▶️ Playing: ${youtube.normalize_url(next_song.url)}`);
-    play_from_file(player, file);
+    try {
+        const file = await youtube.download_or_cached(next_song.url, next_song.interaction);
+        next_song.interaction.editReply(`▶️ Playing: ${youtube.normalize_url(next_song.url)}`);
+        play_from_file(player, file);
+    } catch (err) {
+        console.error("[JAM] Failed to load song:", err);
+        next_song.interaction.editReply("❌ An error occurred while downloading this song.").catch(() => {});
+        server_queue.shift(); // Skip the failed song, even when looping
+        return play_next_in_queue(interaction, player);
+    }
 }
 
 async function create_player(interaction) {
