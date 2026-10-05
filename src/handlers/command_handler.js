@@ -52,4 +52,14 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 });
 
-client.login(process.env.TOKEN);
+let ready = false;
+if (process.env.TOKEN) {
+	client.login(process.env.TOKEN);
+	ready = true;
+} else {
+	console.log('Error: Discord bot token is not defined in the environment variables.');
+}
+
+module.exports = {
+	ready: ready
+}

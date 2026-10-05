@@ -24,9 +24,15 @@ for (const folder of commandFolders) {
 }
 
 // Construct and prepare an instance of the REST module
-const rest = new REST().setToken(process.env.TOKEN);
+let rest;
+if (process.env.TOKEN) {
+	rest = new REST().setToken(process.env.TOKEN);
+} else {
+	console.log('Error: Discord bot token is not defined in the environment variables.');
+}
 
 // and deploy your commands!
+if (!rest) return;
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
